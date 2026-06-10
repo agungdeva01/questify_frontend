@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# UI Reference Assets
+stitch_questify_16_bit_rpg_ui (3)/
