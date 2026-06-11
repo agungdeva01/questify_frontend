@@ -1,94 +1,88 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../pixel_container.dart';
 import '../pixel_button.dart';
+import '../../providers/home_provider.dart';
+import '../../models/quest_response.dart';
 
 class ActiveQuestBoardWidget extends StatelessWidget {
   const ActiveQuestBoardWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // ── Section Header ──────────────────────────────────────────────
-        Row(
-          children: [
-            const Expanded(
-              child: Divider(color: Colors.white24, thickness: 2),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'ACTIVE QUEST BOARD',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall
-                    ?.copyWith(color: Colors.white38),
-              ),
-            ),
-            const Expanded(
-              child: Divider(color: Colors.white24, thickness: 2),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
+    return Consumer<HomeProvider>(
+      builder: (context, home, _) {
+        // Ambil hanya quest aktif dari HomeProvider (sudah difilter di provider)
+        // Sesuai panduan integration guide Section 4: filter lokal di Flutter
+        final activeQuests = home.activeQuests;
 
-        // ── Quest Cards (Mock Data) ─────────────────────────────────────
-        _buildQuestCard(
-          context,
-          iconData: Icons.menu_book,
-          iconColor: AppTheme.primaryWood,
-          title: 'Complete Forensics Report',
-          type: 'Main Quest / Analyzing Memory Dump',
-          exp: '+100 EXP',
-          koin: '+20 KOIN',
-          rank: 'S',
-          rankColor: const Color(0xFFFF003C),
-          rankTextColor: Colors.white,
-        ),
-        const SizedBox(height: 20),
-        _buildQuestCard(
-          context,
-          iconData: Icons.flash_on,
-          iconColor: Colors.orange,
-          title: 'Ngerjain Tugas Forensik',
-          type: 'Sub Quest / Analisis Volatility',
-          exp: '+50 EXP',
-          koin: '+10 KOIN',
-          rank: 'A',
-          rankColor: const Color(0xFFFFD700),
-          rankTextColor: Colors.black,
-        ),
-        const SizedBox(height: 20),
-        _buildQuestCard(
-          context,
-          iconData: Icons.vpn_key,
-          iconColor: Colors.blueAccent,
-          title: 'Learn New API Endpoint',
-          type: 'Skill Quest / /users/me endpoint',
-          exp: '+30 EXP',
-          koin: '+5 KOIN',
-          rank: 'B',
-          rankColor: const Color(0xFF00E5FF),
-          rankTextColor: Colors.black,
-        ),
-      ],
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ── Section Header ──────────────────────────────────────────────
+            Row(
+              children: [
+                const Expanded(
+                  child: Divider(color: Colors.white24, thickness: 2),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    'ACTIVE QUEST BOARD',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleSmall?.copyWith(color: Colors.white38),
+                  ),
+                ),
+                const Expanded(
+                  child: Divider(color: Colors.white24, thickness: 2),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // ── Render quest aktif dari backend ─────────────────────────────
+            if (activeQuests.isEmpty)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Text(
+                    'TIDAK ADA QUEST AKTIF',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleSmall?.copyWith(color: Colors.white24),
+                  ),
+                ),
+              )
+            else
+              ...activeQuests.asMap().entries.map((entry) {
+                final i = entry.key;
+                final q = entry.value;
+                return Padding(
+                  padding: EdgeInsets.only(
+                    bottom: i < activeQuests.length - 1 ? 20.0 : 0,
+                  ),
+                  child: _buildQuestCard(context, quest: q),
+                );
+              }),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildQuestCard(
-    BuildContext context, {
-    required IconData iconData,
-    required Color iconColor,
-    required String title,
-    required String type,
-    required String exp,
-    required String koin,
-    required String rank,
-    required Color rankColor,
-    required Color rankTextColor,
-  }) {
+  Widget _buildQuestCard(BuildContext context, {required QuestResponse quest}) {
+    // Mapping rank ke icon — ikon dekoratif berdasarkan level rank
+    final IconData iconData = _rankIcon(quest.rank);
+    final Color iconColor = quest.rankColor;
+    final String title = quest.title;
+    final String exp = quest.expLabel;
+    final String koin = quest.koinLabel;
+    final String rank = quest.rank;
+    final Color rankColor = quest.rankColor;
+    final Color rankTextColor = quest.rankTextColor;
+
     return PixelContainer(
       backgroundColor: AppTheme.parchment,
       borderColor: Colors.black,
@@ -125,21 +119,18 @@ class ActiveQuestBoardWidget extends StatelessWidget {
                         children: [
                           Text(
                             title.toUpperCase(),
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
+                            style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
                                   color: AppTheme.backgroundCharcoal,
-                                  fontSize: 12, // Reduced font size to avoid overflow
+                                  fontSize:
+                                      12, // Reduced font size to avoid overflow
                                   height: 1.5,
                                 ),
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            type,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
+                            'Rank $rank Quest', // Label dinamis dari rank backend
+                            style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   color: AppTheme.secondaryNavy,
                                   fontSize: 18,
@@ -152,7 +143,9 @@ class ActiveQuestBoardWidget extends StatelessWidget {
                     // ── Rank Badge (Tebal + Block Shadow) ──────────────
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: rankColor,
                         border: Border.all(color: Colors.black, width: 3),
@@ -169,23 +162,17 @@ class ActiveQuestBoardWidget extends StatelessWidget {
                         children: [
                           Text(
                             'RANK',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
+                            style: Theme.of(context).textTheme.labelSmall
                                 ?.copyWith(
-                                    color: rankTextColor,
-                                    fontSize: 9,
-                                    letterSpacing: 1),
+                                  color: rankTextColor,
+                                  fontSize: 9,
+                                  letterSpacing: 1,
+                                ),
                           ),
                           Text(
                             rank,
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineMedium
-                                ?.copyWith(
-                                  color: rankTextColor,
-                                  fontSize: 28,
-                                ),
+                            style: Theme.of(context).textTheme.headlineMedium
+                                ?.copyWith(color: rankTextColor, fontSize: 28),
                           ),
                         ],
                       ),
@@ -213,7 +200,8 @@ class ActiveQuestBoardWidget extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           exp,
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
                                 color: Colors.green.shade700,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
@@ -229,7 +217,8 @@ class ActiveQuestBoardWidget extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           koin,
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
                                 color: Colors.orange.shade800,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
@@ -242,12 +231,12 @@ class ActiveQuestBoardWidget extends StatelessWidget {
                       onPressed: () {},
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14.0, vertical: 10.0),
+                          horizontal: 14.0,
+                          vertical: 10.0,
+                        ),
                         child: Text(
                           'COMPLETE',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelMedium
+                          style: Theme.of(context).textTheme.labelMedium
                               ?.copyWith(color: Colors.white, fontSize: 14),
                         ),
                       ),
@@ -268,14 +257,44 @@ class ActiveQuestBoardWidget extends StatelessWidget {
     const pinSize = 5.0;
     const offset = 5.0;
     return [
-      Positioned(top: offset, left: offset,
-          child: Container(width: pinSize, height: pinSize, color: pinColor)),
-      Positioned(top: offset, right: offset + 4,
-          child: Container(width: pinSize, height: pinSize, color: pinColor)),
-      Positioned(bottom: offset + 4, left: offset,
-          child: Container(width: pinSize, height: pinSize, color: pinColor)),
-      Positioned(bottom: offset + 4, right: offset + 4,
-          child: Container(width: pinSize, height: pinSize, color: pinColor)),
+      Positioned(
+        top: offset,
+        left: offset,
+        child: Container(width: pinSize, height: pinSize, color: pinColor),
+      ),
+      Positioned(
+        top: offset,
+        right: offset + 4,
+        child: Container(width: pinSize, height: pinSize, color: pinColor),
+      ),
+      Positioned(
+        bottom: offset + 4,
+        left: offset,
+        child: Container(width: pinSize, height: pinSize, color: pinColor),
+      ),
+      Positioned(
+        bottom: offset + 4,
+        right: offset + 4,
+        child: Container(width: pinSize, height: pinSize, color: pinColor),
+      ),
     ];
+  }
+
+  /// Mapping rank letter ke IconData untuk dekorasi visual kartu quest
+  IconData _rankIcon(String rank) {
+    switch (rank) {
+      case 'S':
+        return Icons.menu_book;
+      case 'A':
+        return Icons.flash_on;
+      case 'B':
+        return Icons.vpn_key;
+      case 'C':
+        return Icons.star_outline;
+      case 'D':
+        return Icons.assignment;
+      default:
+        return Icons.help_outline;
+    }
   }
 }

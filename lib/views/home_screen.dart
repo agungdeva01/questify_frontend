@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
+import '../providers/home_provider.dart';
 import '../widgets/home/player_card_widget.dart';
 import '../widgets/home/greeting_banner_widget.dart';
 import '../widgets/home/active_quest_board_widget.dart';
@@ -13,6 +15,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Muat data profil + quest dari backend saat halaman pertama dibuka
+    // Menggunakan addPostFrameCallback agar context sudah tersedia
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<HomeProvider>().loadHomeData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
       title: Text(
         'QUESTIFY',
         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: const Color(0xFFE5E2E1), // Silver/Off-White
-              letterSpacing: 2.0,
-            ),
+          color: const Color(0xFFE5E2E1),
+          letterSpacing: 2.0,
+        ),
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(4.0),
@@ -56,16 +68,63 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _homeBody() {
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-      children: const [
-        PlayerCardWidget(),
-        SizedBox(height: 28),
-        GreetingBannerWidget(),
-        SizedBox(height: 28),
-        ActiveQuestBoardWidget(),
-        SizedBox(height: 24),
-      ],
+    return Consumer<HomeProvider>(
+      builder: (context, home, _) {
+        // ── Loading State ────────────────────────────────────────────────
+        if (home.isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(color: AppTheme.accentGold),
+          );
+        }
+
+        // ── Error State (dengan tombol retry) ───────────────────────────
+        if (home.hasError) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.wifi_off, color: Colors.white38, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  home.errorMessage,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.white38),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => home.refresh(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryWood,
+                  ),
+                  child: const Text('COBA LAGI'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // ── Success State: Render widget dengan data nyata ───────────────
+        return RefreshIndicator(
+          color: AppTheme.accentGold,
+          onRefresh: home.refresh,
+          child: ListView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 24.0,
+            ),
+            children: const [
+              PlayerCardWidget(),
+              SizedBox(height: 28),
+              GreetingBannerWidget(),
+              SizedBox(height: 28),
+              ActiveQuestBoardWidget(),
+              SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -73,9 +132,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Center(
       child: Text(
         'COMING SOON',
-        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.white38,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.headlineSmall?.copyWith(color: Colors.white38),
       ),
     );
   }
@@ -95,10 +154,7 @@ class _PixelBottomNav extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onTap;
 
-  const _PixelBottomNav({
-    required this.selectedIndex,
-    required this.onTap,
-  });
+  const _PixelBottomNav({required this.selectedIndex, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -134,17 +190,13 @@ class _PixelBottomNav extends StatelessWidget {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 120),
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   decoration: BoxDecoration(
                     border: isActive
-                        ? Border.all(
-                            color: AppTheme.primaryWoodLight,
-                            width: 2,
-                          )
-                        : Border.all(
-                            color: Colors.transparent,
-                            width: 2,
-                          ),
+                        ? Border.all(color: AppTheme.primaryWoodLight, width: 2)
+                        : Border.all(color: Colors.transparent, width: 2),
                     color: isActive
                         ? AppTheme.primaryWood.withValues(alpha: 0.3)
                         : Colors.transparent,
@@ -157,17 +209,23 @@ class _PixelBottomNav extends StatelessWidget {
                         size: 28,
                         color: isActive
                             ? const Color(0xFFFFC080)
-                            : const Color(0xFF9E9E9E), // Abu-abu medium untuk inaktif
+                            : const Color(
+                                0xFF9E9E9E,
+                              ), // Abu-abu medium untuk inaktif
                       ),
                       const SizedBox(height: 6), // Increased spacing
                       Text(
                         item.label,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: isActive
-                                  ? const Color(0xFFFFC080) // Brighter active color matching sprite
-                                  : const Color(0xFF9E9E9E), // Abu-abu medium untuk inaktif
-                              fontSize: 11,
-                            ),
+                          color: isActive
+                              ? const Color(
+                                  0xFFFFC080,
+                                ) // Brighter active color matching sprite
+                              : const Color(
+                                  0xFF9E9E9E,
+                                ), // Abu-abu medium untuk inaktif
+                          fontSize: 11,
+                        ),
                       ),
                     ],
                   ),

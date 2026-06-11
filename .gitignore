@@ -27,7 +27,9 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
+.env
 .pub-cache/
 .pub/
 /build/
@@ -46,3 +48,6 @@ app.*.map.json
 
 # UI Reference Assets
 stitch_questify_16_bit_rpg_ui (3)/
+
+# Local Artifact Folder
+artifact/

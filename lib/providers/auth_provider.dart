@@ -19,12 +19,16 @@ class AuthProvider with ChangeNotifier {
     return success;
   }
 
-  // Fungsi Register untuk UI (Menggunakan Email)
-  Future<bool> handleRegister(String email, String password) async {
+  // Fungsi Register untuk UI (Menggunakan Username + Email + Password sesuai API spec)
+  Future<bool> handleRegister(
+    String username,
+    String email,
+    String password,
+  ) async {
     _isLoading = true;
     notifyListeners(); // Kasih tahu UI kalau lagi loading
 
-    bool success = await _authService.register(email, password);
+    bool success = await _authService.register(username, email, password);
 
     _isLoading = false;
     notifyListeners(); // Kasih tahu UI kalau loading selesai
@@ -36,5 +40,4 @@ class AuthProvider with ChangeNotifier {
   double exp = 0.4; // 40%
   int koin = 25;
   String username = "Deva";
-  
 }

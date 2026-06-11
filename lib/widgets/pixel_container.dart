@@ -17,13 +17,13 @@ class PixelContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 4.0, right: 4.0), // Margin safety for shadow
+      margin: const EdgeInsets.only(
+        bottom: 4.0,
+        right: 4.0,
+      ), // Margin safety for shadow
       decoration: BoxDecoration(
         color: backgroundColor,
-        border: Border.all(
-          color: borderColor,
-          width: borderThickness,
-        ),
+        border: Border.all(color: borderColor, width: borderThickness),
         boxShadow: const [
           BoxShadow(
             color: Colors.black,

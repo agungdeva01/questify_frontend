@@ -29,11 +29,17 @@ class AppTheme {
         displaySmall: GoogleFonts.pressStart2p(color: Colors.white),
         headlineLarge: GoogleFonts.pressStart2p(color: Colors.white),
         headlineMedium: GoogleFonts.pressStart2p(color: Colors.white),
-        headlineSmall: GoogleFonts.pressStart2p(color: Colors.white, fontSize: 16),
+        headlineSmall: GoogleFonts.pressStart2p(
+          color: Colors.white,
+          fontSize: 16,
+        ),
         titleLarge: GoogleFonts.pressStart2p(color: Colors.white, fontSize: 14),
-        titleMedium: GoogleFonts.pressStart2p(color: Colors.white, fontSize: 12),
+        titleMedium: GoogleFonts.pressStart2p(
+          color: Colors.white,
+          fontSize: 12,
+        ),
         titleSmall: GoogleFonts.pressStart2p(color: Colors.white, fontSize: 10),
-        
+
         // Body and Labels using VT323
         bodyLarge: GoogleFonts.vt323(color: Colors.white, fontSize: 20),
         bodyMedium: GoogleFonts.vt323(color: Colors.white, fontSize: 16),

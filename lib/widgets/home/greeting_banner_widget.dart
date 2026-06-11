@@ -21,9 +21,9 @@ class GreetingBannerWidget extends StatelessWidget {
               "Ready for today's quests?",
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
-                    height: 1.6,
-                  ),
+                color: Colors.white,
+                height: 1.6,
+              ),
             ),
             const SizedBox(height: 24),
             PixelButton(
@@ -33,7 +33,9 @@ class GreetingBannerWidget extends StatelessWidget {
               },
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                    vertical: 16.0, horizontal: 24.0),
+                  vertical: 16.0,
+                  horizontal: 24.0,
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -41,10 +43,9 @@ class GreetingBannerWidget extends StatelessWidget {
                     const SizedBox(width: 14),
                     Text(
                       'Post New Quest',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge
-                          ?.copyWith(color: Colors.white),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleLarge?.copyWith(color: Colors.white),
                     ),
                   ],
                 ),

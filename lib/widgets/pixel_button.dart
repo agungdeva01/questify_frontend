@@ -38,10 +38,7 @@ class _PixelButtonState extends State<PixelButton> {
         ),
         decoration: BoxDecoration(
           color: widget.color,
-          border: Border.all(
-            color: Colors.black,
-            width: 4.0,
-          ),
+          border: Border.all(color: Colors.black, width: 4.0),
           boxShadow: _isPressed
               ? []
               : const [

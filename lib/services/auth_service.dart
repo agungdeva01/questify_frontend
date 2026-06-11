@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart'; // Kita pakai Dio lagi karena FormData butuh library ini langsung
+import 'package:flutter/foundation.dart'; // Menyediakan debugPrint (hanya aktif di debug mode)
 import 'api_client.dart';
 
 class AuthService {
@@ -28,23 +29,27 @@ class AuthService {
       }
       return false;
     } catch (e) {
-      print("Error Login: $e");
+      // [SECURITY] Gunakan debugPrint, bukan print — tidak akan muncul di build release
+      // Hindari mencatat detail error yang mengandung token atau kredensial
+      debugPrint('[AuthService] Login error: ${e.runtimeType}');
       return false;
     }
   }
 
-  Future<bool> register(String email, String password) async {
+  Future<bool> register(String username, String email, String password) async {
     try {
       final response = await _apiClient.dio.post(
         '/api/auth/register',
         data: {
+          'username': username,
           'email': email,
           'password': password,
-        }, // Kirim JSON murni tanpa FormData bungkus
+        }, // Kirim JSON murni: username + email + password sesuai API spec
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      print("Error Register: $e");
+      // [SECURITY] Gunakan debugPrint, bukan print — tidak akan muncul di build release
+      debugPrint('[AuthService] Register error: ${e.runtimeType}');
       return false;
     }
   }

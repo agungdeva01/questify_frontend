@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../core/theme.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -10,19 +12,33 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
 
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   void _register() async {
-    final email = _emailController.text
-        .trim()
-        .toLowerCase(); // Otomatis huruf kecil semua biar aman
+    final username = _usernameController.text.trim();
+    final email = _emailController.text.trim().toLowerCase();
     final password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    if (username.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email dan password tidak boleh kosong!')),
+        SnackBar(
+          backgroundColor: AppTheme.primaryWood,
+          content: Text(
+            'USERNAME, EMAIL, dan PASSWORD wajib diisi!',
+            style: GoogleFonts.vt323(color: Colors.white, fontSize: 16),
+          ),
+        ),
       );
       return;
     }
@@ -30,24 +46,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-    // Memanggil fungsi register bawaan provider kelompokmu
-    bool success = await authProvider.handleRegister(email, password);
+    // Kirim username + email + password ke backend sesuai API spec
+    bool success = await authProvider.handleRegister(username, email, password);
     setState(() => _isLoading = false);
 
     if (success) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pendaftaran Berhasil! Silakan Login.')),
+          SnackBar(
+            backgroundColor: AppTheme.neonGreen.withValues(alpha: 0.8),
+            content: Text(
+              'Pendaftaran Berhasil! Silakan Login.',
+              style: GoogleFonts.vt323(color: Colors.black, fontSize: 16),
+            ),
+          ),
         );
-        // Balik ke halaman login setelah sukses register
         Navigator.pop(context);
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
+            backgroundColor: Colors.red.shade900,
             content: Text(
-              'Register Gagal! Akun mungkin sudah terdaftar atau cek IP lokal.',
+              'Register Gagal! Akun mungkin sudah terdaftar.',
+              style: GoogleFonts.vt323(color: Colors.white, fontSize: 16),
             ),
           ),
         );
@@ -55,123 +78,176 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  // ── Helper builder untuk kolom input bergaya retro ────────────────────────
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscure = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.secondaryNavy,
+        border: Border.all(color: AppTheme.primaryWood, width: 3),
+        boxShadow: const [
+          BoxShadow(color: Colors.black, offset: Offset(4, 4), blurRadius: 0),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscure,
+        keyboardType: keyboardType,
+        style: GoogleFonts.vt323(color: Colors.white, fontSize: 18),
+        cursorColor: AppTheme.accentGold,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: GoogleFonts.vt323(
+            color: AppTheme.accentGold,
+            fontSize: 16,
+          ),
+          prefixIcon: Icon(icon, color: AppTheme.accentGold, size: 20),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xff121214), // Nuansa dark gaming
+      backgroundColor: AppTheme.backgroundCharcoal,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(
-          color: Colors.amber,
-        ), // Tombol back warna koin
+        iconTheme: const IconThemeData(color: AppTheme.accentGold),
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo / Icon Gaming
+              // ── Icon Pixel ─────────────────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.amber, width: 3),
-                  borderRadius: BorderRadius.circular(4),
+                  color: AppTheme.secondaryNavy,
+                  border: Border.all(color: AppTheme.accentGold, width: 3),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black,
+                      offset: Offset(4, 4),
+                      blurRadius: 0,
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   Icons.person_add_alt_1,
                   size: 50,
-                  color: Colors.amber,
+                  color: AppTheme.accentGold,
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Buat Akun',
-                style: TextStyle(
+
+              // ── Judul ──────────────────────────────────────────────────
+              Text(
+                'BUAT AKUN',
+                style: GoogleFonts.pressStart2p(
                   color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                   letterSpacing: 2,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Daftar akun barumu untuk memulai quest',
-                style: TextStyle(color: Colors.grey, fontSize: 13),
+              Text(
+                'Daftar dan mulai petualanganmu!',
+                style: GoogleFonts.vt323(color: Colors.white54, fontSize: 18),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 36),
 
-              // Input Email
-              TextField(
+              // ── Field Username (BARU — di atas Email) ─────────────────
+              _buildInputField(
+                controller: _usernameController,
+                label: 'USERNAME PETUALANG',
+                icon: Icons.person,
+              ),
+              const SizedBox(height: 12),
+
+              // ── Field Email ───────────────────────────────────────────
+              _buildInputField(
                 controller: _emailController,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'EMAIL PETUALANG',
-                  labelStyle: const TextStyle(
-                    color: Colors.amber,
-                    fontSize: 12,
-                  ),
-                  prefixIcon: const Icon(Icons.email, color: Colors.amber),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.grey, width: 2),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.amber, width: 3),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
+                label: 'EMAIL',
+                icon: Icons.email,
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 12),
+
+              // ── Field Password ────────────────────────────────────────
+              _buildInputField(
+                controller: _passwordController,
+                label: 'PASSWORD',
+                icon: Icons.lock,
+                obscure: true,
+              ),
+              const SizedBox(height: 36),
+
+              // ── Tombol Daftar ─────────────────────────────────────────
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _register,
+                  style:
+                      ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.accentGold,
+                        foregroundColor: Colors.black,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero, // Sudut kotak retro
+                        ),
+                        side: const BorderSide(color: Colors.black, width: 3),
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
+                      ).copyWith(
+                        // Block shadow khas pixel art
+                        elevation: WidgetStateProperty.all(0),
+                      ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                            strokeWidth: 3,
+                          ),
+                        )
+                      : Text(
+                          'DAFTAR SEKARANG',
+                          style: GoogleFonts.pressStart2p(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            letterSpacing: 1,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Input Password
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'PASSWORD',
-                  labelStyle: const TextStyle(
-                    color: Colors.amber,
-                    fontSize: 12,
+              // ── Link ke Login ─────────────────────────────────────────
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Text(
+                  'SUDAH PUNYA AKUN? LOGIN',
+                  style: GoogleFonts.vt323(
+                    color: AppTheme.primaryWoodLight,
+                    fontSize: 16,
+                    decoration: TextDecoration.underline,
+                    decorationColor: AppTheme.primaryWoodLight,
                   ),
-                  prefixIcon: const Icon(Icons.lock, color: Colors.amber),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.grey, width: 2),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.amber, width: 3),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Tombol Register
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _register,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    side: const BorderSide(color: Colors.black, width: 2),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.black)
-                      : const Text(
-                          'DAFTAR SEKARANG',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                          ),
-                        ),
                 ),
               ),
             ],

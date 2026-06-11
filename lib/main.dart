@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/home_provider.dart';
 import 'core/theme.dart';
-import 'views/home_screen.dart';
+import 'core/app_router.dart';
+import 'views/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,12 +16,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => HomeProvider()),
+      ],
       child: MaterialApp(
         title: 'Questify',
         theme: AppTheme.dungeonTheme,
         debugShowCheckedModeBanner: false,
-        home: const HomeScreen(), // Halaman utama kita ubah ke HomeScreen untuk testing UI
+        // [SECURITY] navigatorKey memungkinkan 401 Interceptor melakukan
+        // pushAndRemoveUntil ke LoginScreen tanpa memerlukan BuildContext
+        navigatorKey: navigatorKey,
+        home: const LoginScreen(), // Pintu masuk aman: selalu mulai dari Login
       ),
     );
   }
