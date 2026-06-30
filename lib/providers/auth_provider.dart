@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../views/login_screen.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -40,4 +41,23 @@ class AuthProvider with ChangeNotifier {
   double exp = 0.4; // 40%
   int koin = 25;
   String username = "Deva";
+
+  // Fungsi Logout
+  Future<void> handleLogout(BuildContext context) async {
+    _isLoading = true;
+    notifyListeners();
+
+    await _authService.logout();
+
+    _isLoading = false;
+    notifyListeners();
+
+    // Hapus semua stack navigasi dan kembali ke LoginScreen
+    if (context.mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    }
+  }
 }

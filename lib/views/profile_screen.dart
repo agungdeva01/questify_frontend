@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
+import '../models/user_response.dart';
 import '../providers/profile_provider.dart';
+import '../providers/auth_provider.dart';
+import '../widgets/pixel_button.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -33,21 +36,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // State 2: Error
         if (profileProv.errorMessage.isNotEmpty) {
           return Center(
-            child: Text(
-              profileProv.errorMessage,
-              style: const TextStyle(color: Colors.white70),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.wifi_off, color: Colors.white38, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  profileProv.errorMessage,
+                  style: const TextStyle(color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => profileProv.fetchProfileData(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryWood,
+                  ),
+                  child: const Text('COBA LAGI'),
+                ),
+              ],
             ),
           );
         }
 
-        final data = profileProv.profileData;
+        // State 3: Data kosong (belum dimuat)
+        final UserResponse? data = profileProv.profileData;
         if (data == null) return const SizedBox();
 
-        // State 3: Success
+        // ── Formula gamifikasi (sesuai integration guide Section 8) ──
+        final int maxExp = data.level * 100;
+        final double expProgress = (maxExp > 0)
+            ? (data.exp / maxExp).clamp(0.0, 1.0)
+            : 0.0;
+
+        // State 4: Success
         return ListView(
           padding: const EdgeInsets.all(24.0),
           children: [
-            // Kotak Profil Utama
+            // ── Kotak Profil Utama ─────────────────────────────────────────
             Container(
               padding: const EdgeInsets.all(24.0),
               decoration: BoxDecoration(
@@ -75,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Nama & Class
+                  // Username dari backend
                   Text(
                     data.username,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -83,9 +109,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text(
-                    data.heroClass,
-                    style: const TextStyle(
+                  // Hero class — statis karena field ini tidak ada di backend spec
+                  const Text(
+                    'Adventurer',
+                    style: TextStyle(
                       color: Color(0xFFFFC080),
                       fontSize: 16,
                       letterSpacing: 2,
@@ -93,18 +120,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Statistik Status
+                  // ── Statistik Status ─────────────────────────────────────
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildStatBox('LEVEL', '${data.level}'),
-                      _buildStatBox('RANK', data.rank),
-                      _buildStatBox('GOLD', '${data.gold}'),
+                      _buildStatBox('STREAK', '${data.dailyStreak}🔥'),
+                      // data.coins menggantikan gold (field tidak ada di backend)
+                      _buildStatBox('COINS', '${data.coins}'),
                     ],
                   ),
                   const SizedBox(height: 24),
 
-                  // EXP Bar
+                  // ── EXP Bar ──────────────────────────────────────────────
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -118,8 +146,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               fontSize: 12,
                             ),
                           ),
+                          // data.exp menggantikan currentExp, maxExp = level * 100
                           Text(
-                            '${data.currentExp} / ${data.maxExp}',
+                            '${data.exp} / $maxExp',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
@@ -134,14 +163,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           border: Border.all(color: Colors.black, width: 2),
                         ),
                         child: LinearProgressIndicator(
-                          value: data.currentExp / data.maxExp,
+                          value: expProgress,
                           backgroundColor: AppTheme.backgroundCharcoal,
                           color: const Color(0xFF2ED573), // Hijau RPG
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Next Level: ${(expProgress * 100).toStringAsFixed(0)}%',
+                        style: const TextStyle(
+                          color: Colors.white38,
+                          fontSize: 11,
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
                     ],
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 32),
+            // ── Tombol Logout ──────────────────────────────────────────────
+            PixelButton(
+              color: Colors.red[800]!,
+              onPressed: () =>
+                  context.read<AuthProvider>().handleLogout(context),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.0),
+                child: Center(
+                  child: Text(
+                    'LOGOUT',
+                    style: TextStyle(
+                      fontFamily: 'VT323',
+                      fontSize: 24,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
@@ -166,7 +226,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           value,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 24,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),

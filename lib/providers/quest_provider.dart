@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import '../models/quest_response.dart';
 import '../services/quest_service.dart';
+import 'home_provider.dart'; // ← Dependency injection untuk sinkronisasi
 
 class QuestProvider with ChangeNotifier {
   final QuestService _questService = QuestService();
+  final HomeProvider _homeProvider; // ← Referensi ke HomeProvider
+
+  // Constructor menerima HomeProvider dari luar (ProxyProvider di main.dart)
+  QuestProvider(this._homeProvider);
 
   List<QuestResponse> _quests = [];
   bool _isLoading = false;
@@ -36,7 +41,9 @@ class QuestProvider with ChangeNotifier {
     if (title.trim().isEmpty) return false;
     final newQuest = await _questService.createQuest(title, rank);
     if (newQuest != null) {
-      await loadQuests(); // Refresh data otomatis setelah create
+      await loadQuests(); // Refresh list quest
+      await _homeProvider
+          .loadHomeData(); // Sinkronisasi: update angka statistik di PlayerCard
       return true;
     }
     return false;
@@ -46,7 +53,9 @@ class QuestProvider with ChangeNotifier {
   Future<bool> completeQuest(String id) async {
     final updated = await _questService.completeQuest(id);
     if (updated != null) {
-      await loadQuests(); // Refresh data otomatis setelah update
+      await loadQuests(); // Refresh list quest di QuestScreen
+      await _homeProvider
+          .loadHomeData(); // Sinkronisasi: refresh profil + EXP + Koin di HomeScreen
       return true;
     }
     return false;
@@ -56,7 +65,9 @@ class QuestProvider with ChangeNotifier {
   Future<bool> deleteQuest(String id) async {
     final success = await _questService.deleteQuest(id);
     if (success) {
-      await loadQuests(); // Refresh data otomatis setelah delete
+      await loadQuests(); // Refresh list quest
+      await _homeProvider
+          .loadHomeData(); // Sinkronisasi: update statistik di PlayerCard
       return true;
     }
     return false;

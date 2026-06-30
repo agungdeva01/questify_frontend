@@ -4,7 +4,7 @@ import '../providers/quest_provider.dart';
 import '../models/quest_response.dart';
 
 class QuestScreen extends StatefulWidget {
-  const QuestScreen({Key? key}) : super(key: key);
+  const QuestScreen({super.key});
 
   @override
   State<QuestScreen> createState() => _QuestScreenState();

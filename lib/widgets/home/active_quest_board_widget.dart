@@ -2,11 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../pixel_container.dart';
+import '../pixel_button.dart';
 import '../../providers/home_provider.dart';
 import '../../models/quest_response.dart';
 
-class ActiveQuestBoardWidget extends StatelessWidget {
-  const ActiveQuestBoardWidget({super.key}); // Parameter sudah dibersihkan
+class ActiveQuestBoardWidget extends StatefulWidget {
+  /// Callback dipanggil saat user menekan tombol COMPLETE pada salah satu kartu.
+  /// Parent (HomeScreen) bertanggung jawab memanggil QuestProvider.completeQuest
+  /// dan menampilkan Snackbar feedback.
+  final Future<void> Function(String questId)? onComplete;
+
+  const ActiveQuestBoardWidget({super.key, this.onComplete});
+
+  @override
+  State<ActiveQuestBoardWidget> createState() => _ActiveQuestBoardWidgetState();
+}
+
+class _ActiveQuestBoardWidgetState extends State<ActiveQuestBoardWidget> {
+  /// ID quest yang sedang diproses. Digunakan untuk menampilkan loading
+  /// state per-kartu dan mencegah double-tap.
+  String? _questBeingCompleted;
+
+  /// Dipanggil saat tombol COMPLETE ditekan pada satu kartu quest.
+  Future<void> _onCompleteTapped(String questId) async {
+    if (_questBeingCompleted != null) {
+      return; // Abaikan jika ada yg sedang diproses
+    }
+
+    setState(() => _questBeingCompleted = questId);
+
+    try {
+      await widget.onComplete?.call(questId);
+    } finally {
+      // Pastikan state loading selalu direset meski terjadi error
+      if (mounted) setState(() => _questBeingCompleted = null);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +102,7 @@ class ActiveQuestBoardWidget extends StatelessWidget {
                 ),
               )
             else
-              // ── Menampilkan Daftar Card Quest Aktif ─────────────────────────
+              // ── Daftar Card Quest Aktif ──────────────────────────────────
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -89,7 +120,9 @@ class ActiveQuestBoardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildQuestCard(BuildContext context, dynamic quest) {
+  Widget _buildQuestCard(BuildContext context, QuestResponse quest) {
+    final bool isThisCardLoading = _questBeingCompleted == quest.id;
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF4ECD8),
@@ -103,6 +136,7 @@ class ActiveQuestBoardWidget extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
+                // ── Ikon Rank ───────────────────────────────────────────────
                 Container(
                   width: 48,
                   height: 48,
@@ -117,6 +151,8 @@ class ActiveQuestBoardWidget extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
+
+                // ── Info Quest ──────────────────────────────────────────────
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,28 +197,40 @@ class ActiveQuestBoardWidget extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryWood,
-                        border: Border.all(color: Colors.black, width: 2),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'DETAIL',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(color: Colors.white, fontSize: 14),
-                        ),
-                      ),
+                const SizedBox(width: 12),
+
+                // ── Tombol COMPLETE (PixelButton) ───────────────────────────
+                PixelButton(
+                  color: AppTheme.neonGreen,
+                  onPressed: isThisCardLoading
+                      ? () {} // No-op saat loading — efek press tetap ada tapi aksi dikosongkan
+                      : () => _onCompleteTapped(quest.id),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 4.0,
                     ),
-                  ],
+                    child: isThisCardLoading
+                        // Loading indicator mini saat request berjalan
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.black,
+                            ),
+                          )
+                        // Label COMPLETE dengan font VT323
+                        : Text(
+                            'COMPLETE',
+                            style: TextStyle(
+                              fontFamily: 'VT323',
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                  ),
                 ),
               ],
             ),

@@ -72,6 +72,13 @@ class PlayerCardWidget extends StatelessWidget {
                       width: 32,
                       height: 32,
                       filterQuality: FilterQuality.none,
+                      // Fallback defensif jika AssetManifest.bin gagal dimuat
+                      // (terjadi saat Hot Restart di Windows desktop)
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.star,
+                        color: AppTheme.accentGold,
+                        size: 32,
+                      ),
                     ),
                     const SizedBox(width: 5),
                     Text(
@@ -86,6 +93,12 @@ class PlayerCardWidget extends StatelessWidget {
                       width: 24,
                       height: 24,
                       filterQuality: FilterQuality.none,
+                      // Fallback defensif jika AssetManifest.bin gagal dimuat
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.monetization_on,
+                        color: AppTheme.accentGold,
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 5),
                     Text(
@@ -222,7 +235,11 @@ class PlayerCardWidget extends StatelessWidget {
                                         ?.copyWith(color: Colors.white70),
                                   ),
                                   Text(
-                                    user?.dailyStreak.toString().padLeft(2, '0') ?? '00',
+                                    user?.dailyStreak.toString().padLeft(
+                                          2,
+                                          '0',
+                                        ) ??
+                                        '00',
                                     style: Theme.of(context)
                                         .textTheme
                                         .headlineSmall

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../providers/home_provider.dart';
+import '../providers/quest_provider.dart'; // ← Dibutuhkan untuk _handleCompleteQuest
 import '../widgets/home/player_card_widget.dart';
 import '../widgets/home/greeting_banner_widget.dart';
 import '../widgets/home/active_quest_board_widget.dart';
@@ -24,6 +25,27 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HomeProvider>().loadHomeData();
     });
+  }
+
+  /// Dipanggil saat user menekan COMPLETE pada kartu quest di Home Screen.
+  /// QuestProvider.completeQuest() menangani request API, lalu otomatis
+  /// menyinkronkan HomeProvider (Solusi B) sehingga EXP & Koin langsung
+  /// terupdate tanpa perlu navigasi atau restart.
+  Future<void> _handleCompleteQuest(String questId) async {
+    final success = await context.read<QuestProvider>().completeQuest(questId);
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            '🎉 Quest Clear! EXP & Koin berhasil ditambahkan!',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+          backgroundColor: AppTheme.neonGreen,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   @override
@@ -130,7 +152,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               const SizedBox(height: 24),
-              const ActiveQuestBoardWidget(), // Panggil board tanpa parameter apa-apa
+              ActiveQuestBoardWidget(
+                onComplete: _handleCompleteQuest, // ← Sambung handler ke widget
+              ),
             ],
           ),
         );

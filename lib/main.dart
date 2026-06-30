@@ -21,7 +21,13 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
-        ChangeNotifierProvider(create: (_) => QuestProvider()),
+        // ProxyProvider: QuestProvider menerima HomeProvider sebagai dependency
+        // Setiap kali HomeProvider berubah, QuestProvider diperbarui juga
+        ChangeNotifierProxyProvider<HomeProvider, QuestProvider>(
+          create: (ctx) => QuestProvider(ctx.read<HomeProvider>()),
+          update: (ctx, homeProvider, previous) =>
+              previous ?? QuestProvider(homeProvider),
+        ),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ],
       child: MaterialApp(

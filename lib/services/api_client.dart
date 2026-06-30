@@ -13,8 +13,8 @@ class ApiClient {
   // Jika pakai HP Fisik asli (colok kabel), gunakan IP laptopmu: 'http://192.168.1.xx:8000'
 
   // final String baseUrl = 'http://192.168.0.160:8000'; // ip laptop pake wifi
-  // final String baseUrl = 'http://10.176.63.88:8000'; // ip laptop pake hotspot
-  final String baseUrl = 'http://192.168.18.30:8000'; // ip laptop pake hotspot
+  final String baseUrl = 'http://10.176.63.88:8000'; // ip laptop pake hotspot
+  // final String baseUrl = 'http://192.168.0.160:8000'; // ip laptop pake hotspot
 
   ApiClient() {
     dio.options.baseUrl = baseUrl;
