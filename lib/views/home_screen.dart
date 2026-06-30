@@ -5,6 +5,8 @@ import '../providers/home_provider.dart';
 import '../widgets/home/player_card_widget.dart';
 import '../widgets/home/greeting_banner_widget.dart';
 import '../widgets/home/active_quest_board_widget.dart';
+import '../views/quest_screen.dart';
+import '../views/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,8 +21,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Muat data profil + quest dari backend saat halaman pertama dibuka
-    // Menggunakan addPostFrameCallback agar context sudah tersedia
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HomeProvider>().loadHomeData();
     });
@@ -62,6 +62,10 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (_selectedIndex) {
       case 0:
         return _homeBody();
+      case 1:
+        return const QuestScreen(); // Memastikan tab Quest terbuka
+      case 3:
+        return const ProfileScreen();
       default:
         return _comingSoonBody();
     }
@@ -70,14 +74,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _homeBody() {
     return Consumer<HomeProvider>(
       builder: (context, home, _) {
-        // ── Loading State ────────────────────────────────────────────────
         if (home.isLoading) {
           return const Center(
             child: CircularProgressIndicator(color: AppTheme.accentGold),
           );
         }
 
-        // ── Error State (dengan tombol retry) ───────────────────────────
         if (home.hasError) {
           return Center(
             child: Column(
@@ -105,7 +107,6 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        // ── Success State: Render widget dengan data nyata ───────────────
         return RefreshIndicator(
           color: AppTheme.accentGold,
           onRefresh: home.refresh,
@@ -114,13 +115,22 @@ class _HomeScreenState extends State<HomeScreen> {
               horizontal: 16.0,
               vertical: 24.0,
             ),
-            children: const [
-              PlayerCardWidget(),
-              SizedBox(height: 28),
-              GreetingBannerWidget(),
-              SizedBox(height: 28),
-              ActiveQuestBoardWidget(),
-              SizedBox(height: 24),
+            children: [
+              const PlayerCardWidget(),
+              const SizedBox(height: 16),
+
+              // Ini dia! Menghubungkan tombol besar di Banner
+              // agar saat diklik pindah ke tab Quest (index 1)
+              GreetingBannerWidget(
+                onPostNewQuestTap: () {
+                  setState(() {
+                    _selectedIndex = 1;
+                  });
+                },
+              ),
+
+              const SizedBox(height: 24),
+              const ActiveQuestBoardWidget(), // Panggil board tanpa parameter apa-apa
             ],
           ),
         );
@@ -209,21 +219,15 @@ class _PixelBottomNav extends StatelessWidget {
                         size: 28,
                         color: isActive
                             ? const Color(0xFFFFC080)
-                            : const Color(
-                                0xFF9E9E9E,
-                              ), // Abu-abu medium untuk inaktif
+                            : const Color(0xFF9E9E9E),
                       ),
-                      const SizedBox(height: 6), // Increased spacing
+                      const SizedBox(height: 6),
                       Text(
                         item.label,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: isActive
-                              ? const Color(
-                                  0xFFFFC080,
-                                ) // Brighter active color matching sprite
-                              : const Color(
-                                  0xFF9E9E9E,
-                                ), // Abu-abu medium untuk inaktif
+                              ? const Color(0xFFFFC080)
+                              : const Color(0xFF9E9E9E),
                           fontSize: 11,
                         ),
                       ),

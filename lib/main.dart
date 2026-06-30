@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/home_provider.dart';
+import 'providers/quest_provider.dart';
+import 'providers/profile_provider.dart';
 import 'core/theme.dart';
 import 'core/app_router.dart';
 import 'views/login_screen.dart';
@@ -19,6 +21,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
+        ChangeNotifierProvider(create: (_) => QuestProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ],
       child: MaterialApp(
         title: 'Questify',

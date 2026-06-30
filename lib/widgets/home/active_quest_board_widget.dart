@@ -2,19 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../pixel_container.dart';
-import '../pixel_button.dart';
 import '../../providers/home_provider.dart';
 import '../../models/quest_response.dart';
 
 class ActiveQuestBoardWidget extends StatelessWidget {
-  const ActiveQuestBoardWidget({super.key});
+  const ActiveQuestBoardWidget({super.key}); // Parameter sudah dibersihkan
 
   @override
   Widget build(BuildContext context) {
     return Consumer<HomeProvider>(
       builder: (context, home, _) {
-        // Ambil hanya quest aktif dari HomeProvider (sudah difilter di provider)
-        // Sesuai panduan integration guide Section 4: filter lokal di Flutter
         final activeQuests = home.activeQuests;
 
         return Column(
@@ -40,203 +37,147 @@ class ActiveQuestBoardWidget extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // ── Render quest aktif dari backend ─────────────────────────────
+            // ── Kondisi Jika Quest Kosong ───────────────────────────────────
             if (activeQuests.isEmpty)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Text(
-                    'TIDAK ADA QUEST AKTIF',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleSmall?.copyWith(color: Colors.white24),
+              PixelContainer(
+                backgroundColor: AppTheme.secondaryNavy.withValues(alpha: 0.5),
+                borderColor: Colors.black,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 32.0),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.assignment_late_outlined,
+                        color: Colors.white24,
+                        size: 48,
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        'No Active Quests Found',
+                        style: TextStyle(
+                          color: Colors.white38,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Post a new quest above to start your journey!',
+                        style: TextStyle(color: Colors.white12, fontSize: 12),
+                      ),
+                    ],
                   ),
                 ),
               )
             else
-              ...activeQuests.asMap().entries.map((entry) {
-                final i = entry.key;
-                final q = entry.value;
-                return Padding(
-                  padding: EdgeInsets.only(
-                    bottom: i < activeQuests.length - 1 ? 20.0 : 0,
-                  ),
-                  child: _buildQuestCard(context, quest: q),
-                );
-              }),
+              // ── Menampilkan Daftar Card Quest Aktif ─────────────────────────
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: activeQuests.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final quest = activeQuests[index];
+                  return _buildQuestCard(context, quest);
+                },
+              ),
           ],
         );
       },
     );
   }
 
-  Widget _buildQuestCard(BuildContext context, {required QuestResponse quest}) {
-    // Mapping rank ke icon — ikon dekoratif berdasarkan level rank
-    final IconData iconData = _rankIcon(quest.rank);
-    final Color iconColor = quest.rankColor;
-    final String title = quest.title;
-    final String exp = quest.expLabel;
-    final String koin = quest.koinLabel;
-    final String rank = quest.rank;
-    final Color rankColor = quest.rankColor;
-    final Color rankTextColor = quest.rankTextColor;
-
-    return PixelContainer(
-      backgroundColor: AppTheme.parchment,
-      borderColor: Colors.black,
-      borderThickness: 4.0,
+  Widget _buildQuestCard(BuildContext context, dynamic quest) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4ECD8),
+        border: Border.all(color: Colors.black, width: 3),
+        boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+      ),
       child: Stack(
         children: [
-          // Silver corner pins (decorative pixel nails)
           ..._buildCornerPins(),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
               children: [
-                // ── Top Row: Icon + Title + Rank Badge ─────────────────
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    PixelContainer(
-                      backgroundColor: iconColor,
-                      borderColor: Colors.black,
-                      borderThickness: 2.0,
-                      child: SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: Center(
-                          child: Icon(iconData, color: Colors.white, size: 24),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppTheme.secondaryNavy,
+                    border: Border.all(color: Colors.black, width: 2),
+                  ),
+                  child: Icon(
+                    _rankIcon(quest.rank),
+                    color: const Color(0xFFFFC080),
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Text(
-                            title.toUpperCase(),
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  color: AppTheme.backgroundCharcoal,
-                                  fontSize:
-                                      12, // Reduced font size to avoid overflow
-                                  height: 1.5,
-                                ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            color: Colors.black,
+                            child: Text(
+                              'RANK ${quest.rank}',
+                              style: const TextStyle(
+                                color: Color(0xFFFFC080),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(width: 8),
                           Text(
-                            'Rank $rank Quest', // Label dinamis dari rank backend
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: AppTheme.secondaryNavy,
-                                  fontSize: 18,
-                                ),
+                            '#${quest.id.substring(0, 4)}',
+                            style: const TextStyle(
+                              color: Colors.black38,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    // ── Rank Badge (Tebal + Block Shadow) ──────────────
+                      const SizedBox(height: 4),
+                      Text(
+                        quest.title,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: AppTheme.backgroundCharcoal,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
+                        horizontal: 8,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: rankColor,
-                        border: Border.all(color: Colors.black, width: 3),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black,
-                            offset: Offset(4, 4),
-                            blurRadius: 0,
-                          ),
-                        ],
+                        color: AppTheme.primaryWood,
+                        border: Border.all(color: Colors.black, width: 2),
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'RANK',
-                            style: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(
-                                  color: rankTextColor,
-                                  fontSize: 9,
-                                  letterSpacing: 1,
-                                ),
-                          ),
-                          Text(
-                            rank,
-                            style: Theme.of(context).textTheme.headlineMedium
-                                ?.copyWith(color: rankTextColor, fontSize: 28),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // ── Divider ─────────────────────────────────────────────
-                Container(height: 2, color: Colors.black12),
-                const SizedBox(height: 16),
-
-                // ── Bottom Row: Rewards + COMPLETE button ───────────────
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Image.asset(
-                          'assets/images/star.png',
-                          width: 28,
-                          height: 28,
-                          filterQuality: FilterQuality.none,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          exp,
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(
-                                color: Colors.green.shade700,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                        ),
-                        const SizedBox(width: 20),
-                        Image.asset(
-                          'assets/images/coin.png',
-                          width: 20,
-                          height: 20,
-                          filterQuality: FilterQuality.none,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          koin,
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(
-                                color: Colors.orange.shade800,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                        ),
-                      ],
-                    ),
-                    PixelButton(
-                      color: AppTheme.backgroundCharcoal,
-                      onPressed: () {},
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14.0,
-                          vertical: 10.0,
-                        ),
+                      child: Center(
                         child: Text(
-                          'COMPLETE',
-                          style: Theme.of(context).textTheme.labelMedium
+                          'DETAIL',
+                          style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(color: Colors.white, fontSize: 14),
                         ),
                       ),
@@ -251,7 +192,6 @@ class ActiveQuestBoardWidget extends StatelessWidget {
     );
   }
 
-  /// Decorative silver pixel pins at each corner of the parchment card
   List<Widget> _buildCornerPins() {
     const pinColor = Color(0xFFBCC7DE);
     const pinSize = 5.0;
@@ -280,7 +220,6 @@ class ActiveQuestBoardWidget extends StatelessWidget {
     ];
   }
 
-  /// Mapping rank letter ke IconData untuk dekorasi visual kartu quest
   IconData _rankIcon(String rank) {
     switch (rank) {
       case 'S':
@@ -290,11 +229,9 @@ class ActiveQuestBoardWidget extends StatelessWidget {
       case 'B':
         return Icons.vpn_key;
       case 'C':
-        return Icons.star_outline;
-      case 'D':
-        return Icons.assignment;
+        return Icons.gavel;
       default:
-        return Icons.help_outline;
+        return Icons.assignment;
     }
   }
 }

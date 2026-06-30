@@ -5,7 +5,11 @@ import '../pixel_button.dart';
 import '../pixel_sprites.dart';
 
 class GreetingBannerWidget extends StatelessWidget {
-  const GreetingBannerWidget({super.key});
+  // 1. Tambahkan parameter ini untuk menerima aksi klik
+  final VoidCallback? onPostNewQuestTap;
+
+  // 2. Tambahkan ke dalam constructor
+  const GreetingBannerWidget({super.key, this.onPostNewQuestTap});
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +32,8 @@ class GreetingBannerWidget extends StatelessWidget {
             const SizedBox(height: 24),
             PixelButton(
               color: AppTheme.primaryWoodLight,
-              onPressed: () {
-                // TODO: Navigate to Post Quest screen
-              },
+              // 3. Masukkan fungsi kliknya di sini menggantikan yang kosong
+              onPressed: onPostNewQuestTap ?? () {},
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: 16.0,

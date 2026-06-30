@@ -41,15 +41,14 @@ class AuthService {
       final response = await _apiClient.dio.post(
         '/api/auth/register',
         data: {
-          'username': username,
-          'email': email,
-          'password': password,
-        }, // Kirim JSON murni: username + email + password sesuai API spec
+          "username": username, // Harus persis sama dengan Swagger
+          "email": email, // Harus persis sama dengan Swagger
+          "password": password, // Harus persis sama dengan Swagger
+        },
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      // [SECURITY] Gunakan debugPrint, bukan print — tidak akan muncul di build release
-      debugPrint('[AuthService] Register error: ${e.runtimeType}');
+      debugPrint('[AuthService] Register error: ${e.toString()}');
       return false;
     }
   }
