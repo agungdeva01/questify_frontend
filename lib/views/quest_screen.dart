@@ -1,3 +1,4 @@
+import '../widgets/quest/quest_edit_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/quest_provider.dart';
@@ -304,6 +305,37 @@ class _QuestScreenState extends State<QuestScreen>
                     ),
                     onPressed: () => _showDeleteDialog(quest.id),
                     tooltip: 'Hapus Misi',
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => QuestEditDialog(
+                          id: quest.id,
+                          initialTitle: quest.title,
+                          initialRank: quest.rank,
+                          onSave: (newTitle, newRank) async {
+                            final success = await context
+                                .read<QuestProvider>()
+                                .updateQuest(quest.id, newTitle, newRank);
+                            if (success) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Quest berhasil diupdate! ✨"),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Gagal mengupdate quest ❌"),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      );
+                    },
                   ),
                 ],
               )

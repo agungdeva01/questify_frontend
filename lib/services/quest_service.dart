@@ -88,4 +88,21 @@ class QuestService {
       return false;
     }
   }
+
+  // Edit
+  Future<bool> updateQuest(String questId, String title, String rank) async {
+    try {
+      final response = await _apiClient.dio.put(
+        '/api/quests/$questId', // Sesuaikan URL dengan dokumentasi backend/Swagger-mu
+        data: {'title': title, 'rank': rank},
+      );
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      debugPrint('[QuestService] updateQuest error: ${e.response?.statusCode}');
+      return false;
+    } catch (e) {
+      debugPrint('[QuestService] updateQuest unexpected error: $e');
+      return false;
+    }
+  }
 }

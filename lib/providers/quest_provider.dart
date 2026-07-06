@@ -72,4 +72,17 @@ class QuestProvider with ChangeNotifier {
     }
     return false;
   }
+
+  // EDIT
+
+  Future<bool> updateQuest(String id, String title, String rank) async {
+    // Panggil method baru yang kita buat di service tadi
+    final success = await _questService.updateQuest(id, title, rank);
+
+    if (success) {
+      await loadQuests(); // Refresh data setelah berhasil update
+      return true;
+    }
+    return false;
+  }
 }

@@ -4,6 +4,7 @@ import 'providers/auth_provider.dart';
 import 'providers/home_provider.dart';
 import 'providers/quest_provider.dart';
 import 'providers/profile_provider.dart';
+import 'providers/reward_provider.dart';
 import 'core/theme.dart';
 import 'core/app_router.dart';
 import 'views/login_screen.dart';
@@ -21,23 +22,29 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
-        // ProxyProvider: QuestProvider menerima HomeProvider sebagai dependency
-        // Setiap kali HomeProvider berubah, QuestProvider diperbarui juga
+
+        // ProxyProvider untuk QuestProvider
         ChangeNotifierProxyProvider<HomeProvider, QuestProvider>(
           create: (ctx) => QuestProvider(ctx.read<HomeProvider>()),
           update: (ctx, homeProvider, previous) =>
               previous ?? QuestProvider(homeProvider),
         ),
+
+        // ProxyProvider untuk RewardProvider
+        ChangeNotifierProxyProvider<HomeProvider, RewardProvider>(
+          create: (ctx) => RewardProvider(ctx.read<HomeProvider>()),
+          update: (ctx, homeProvider, previous) =>
+              previous ?? RewardProvider(homeProvider),
+        ),
+
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ],
       child: MaterialApp(
         title: 'Questify',
         theme: AppTheme.dungeonTheme,
         debugShowCheckedModeBanner: false,
-        // [SECURITY] navigatorKey memungkinkan 401 Interceptor melakukan
-        // pushAndRemoveUntil ke LoginScreen tanpa memerlukan BuildContext
         navigatorKey: navigatorKey,
-        home: const LoginScreen(), // Pintu masuk aman: selalu mulai dari Login
+        home: const LoginScreen(),
       ),
     );
   }

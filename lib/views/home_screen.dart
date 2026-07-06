@@ -8,6 +8,7 @@ import '../widgets/home/greeting_banner_widget.dart';
 import '../widgets/home/active_quest_board_widget.dart';
 import '../views/quest_screen.dart';
 import '../views/profile_screen.dart';
+import '../views/shop_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -86,6 +87,8 @@ class _HomeScreenState extends State<HomeScreen> {
         return _homeBody();
       case 1:
         return const QuestScreen(); // Memastikan tab Quest terbuka
+      case 2:
+        return const ShopScreen();
       case 3:
         return const ProfileScreen();
       default:
