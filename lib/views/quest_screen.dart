@@ -319,6 +319,7 @@ class _QuestScreenState extends State<QuestScreen>
                             final success = await context
                                 .read<QuestProvider>()
                                 .updateQuest(quest.id, newTitle, newRank);
+                            if (!mounted) return;
                             if (success) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(

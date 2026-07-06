@@ -6,7 +6,7 @@ import '../widgets/shop/reward_form_dialog.dart';
 import '../models/reward_model.dart';
 
 class ShopScreen extends StatefulWidget {
-  const ShopScreen({Key? key}) : super(key: key);
+  const ShopScreen({super.key});
 
   @override
   State<ShopScreen> createState() => _ShopScreenState();
@@ -41,7 +41,7 @@ class _ShopScreenState extends State<ShopScreen> {
             success = await provider.editReward(reward.id, title, cost);
           }
 
-          if (mounted) {
+          if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
@@ -200,7 +200,7 @@ class _ShopScreenState extends State<ShopScreen> {
                             reward.id.toString(),
                           );
 
-                          if (mounted) {
+                          if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(

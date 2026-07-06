@@ -37,20 +37,37 @@ class PlayerCardWidget extends StatelessWidget {
                 // ── Baris Atas: Avatar + Nama + Stats ─────────────────────
                 Row(
                   children: [
-                    // Avatar pixel sprite
+                    // Avatar: network jika ada, icon default jika null
                     PixelContainer(
                       backgroundColor: AppTheme.backgroundCharcoal,
                       borderColor: AppTheme.primaryWoodLight,
                       borderThickness: 2.0,
-                      child: const SizedBox(
+                      child: SizedBox(
                         width: 40,
                         height: 40,
-                        child: Center(
-                          child: Icon(
-                            Icons.person,
-                            color: Colors.white,
-                            size: 24,
-                          ),
+                        child: ClipRect(
+                          child: user?.avatarUrl != null
+                              ? Image.network(
+                                  'http://192.168.56.1:8000${user!.avatarUrl}',
+                                  width: 40,
+                                  height: 40,
+                                  filterQuality: FilterQuality.none,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => const Center(
+                                    child: Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ),
+                                )
+                              : const Center(
+                                  child: Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
                         ),
                       ),
                     ),

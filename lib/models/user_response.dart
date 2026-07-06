@@ -9,6 +9,7 @@ class UserResponse {
   final int coins;
   final int dailyStreak;
   final String createdAt;
+  final String? avatarUrl; // Nullable — null berarti belum set avatar
 
   const UserResponse({
     required this.id,
@@ -19,6 +20,7 @@ class UserResponse {
     required this.coins,
     required this.dailyStreak,
     required this.createdAt,
+    this.avatarUrl,
   });
 
   /// Parse dari JSON map yang diterima Dio
@@ -32,6 +34,8 @@ class UserResponse {
       coins: (json['coins'] as num).toInt(),
       dailyStreak: (json['daily_streak'] as num?)?.toInt() ?? 0,
       createdAt: json['created_at'] as String,
+      // avatar_url bisa null jika user belum upload foto
+      avatarUrl: json['avatar_url'] as String?,
     );
   }
 

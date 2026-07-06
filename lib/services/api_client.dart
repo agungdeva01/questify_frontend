@@ -12,9 +12,9 @@ class ApiClient {
   // Jika pakai Emulator Android bawaan laptop, gunakan: 'http://10.0.2.2:8000'
   // Jika pakai HP Fisik asli (colok kabel), gunakan IP laptopmu: 'http://192.168.1.xx:8000'
 
-  // final String baseUrl = 'http://192.168.0.160:8000'; // ip laptop pake wifi
+  final String baseUrl = 'http://192.168.56.1:8000'; // ip laptop pake wifi
   // final String baseUrl = 'http://10.249.241.60:8000'; // ip laptop pake hotspot
-  final String baseUrl = 'http://192.168.1.9:8000'; // ip laptop pake hotspot
+  // final String baseUrl = 'http://192.168.1.9:8000'; // ip laptop pake hotspot
 
   ApiClient() {
     dio.options.baseUrl = baseUrl;

@@ -37,7 +37,13 @@ class MyApp extends StatelessWidget {
               previous ?? RewardProvider(homeProvider),
         ),
 
-        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        // ProxyProvider untuk ProfileProvider — HomeProvider di-inject agar
+        // edit username & upload avatar langsung sinkron ke Home Screen
+        ChangeNotifierProxyProvider<HomeProvider, ProfileProvider>(
+          create: (ctx) => ProfileProvider(ctx.read<HomeProvider>()),
+          update: (ctx, homeProvider, previous) =>
+              previous ?? ProfileProvider(homeProvider),
+        ),
       ],
       child: MaterialApp(
         title: 'Questify',

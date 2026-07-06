@@ -6,8 +6,7 @@ class RewardFormDialog extends StatefulWidget {
   reward; // Jika null -> mode Create, jika ada -> mode Update
   final Function(String title, int cost) onSubmit;
 
-  const RewardFormDialog({Key? key, this.reward, required this.onSubmit})
-    : super(key: key);
+  const RewardFormDialog({super.key, this.reward, required this.onSubmit});
 
   @override
   State<RewardFormDialog> createState() => _RewardFormDialogState();
@@ -91,10 +90,12 @@ class _RewardFormDialogState extends State<RewardFormDialog> {
                 ),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty)
+                if (value == null || value.isEmpty) {
                   return 'Harga tidak boleh kosong';
-                if (int.tryParse(value) == null)
+                }
+                if (int.tryParse(value) == null) {
                   return 'Masukkan angka yang valid';
+                }
                 return null;
               },
             ),
